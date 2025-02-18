@@ -51,3 +51,9 @@ variable "security_group_ids" {
   description = "List of security group IDs to attach to the EC2 instance"
   default     = []
 }
+
+variable "salt_master_private_ip" {
+  description = "Public IP address of the Salt Master"
+  type        = string
+  default     = "" # Optional: Default to empty for Salt Master to self-configure
+}

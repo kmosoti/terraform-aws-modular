@@ -1,0 +1,58 @@
+#!/bin/bash
+# Update package lists
+sudo apt-get update -y
+
+# Install required packages: Python, pip, git, and the venv package for Python 3.12
+sudo apt-get install -y python3 python3-pip git python3.12-venv
+
+# Clone the Discord bot repository if it doesn't already exist at /opt/discord_bot
+if [ ! -d "/opt/discord_bot" ]; then
+  sudo git clone "${bot_repo_url}" /opt/discord_bot
+fi
+cd /opt/discord_bot
+
+# Create a virtual environment if it doesn't already exist
+if [ ! -d "/opt/discord_bot/venv" ]; then
+  sudo python3 -m venv /opt/discord_bot/venv
+fi
+
+# Change ownership of the virtual environment to the ubuntu user
+sudo chown -R ubuntu:ubuntu /opt/discord_bot/venv
+
+# Activate the virtual environment
+source /opt/discord_bot/venv/bin/activate
+
+# Upgrade pip within the virtual environment
+pip install --upgrade pip
+
+# Install Python dependencies from requirements.txt using absolute path
+pip install -r /opt/discord_bot/requirements.txt
+
+# Write the Discord token into a .env file at the repository root
+echo "DISCORD_TOKEN=${discord_token}" > /opt/discord_bot/.env
+sudo chown ubuntu:ubuntu /opt/discord_bot/.env
+
+# Configure Salt Minion to connect to the Salt Master
+echo "master: ${salt_master_private_ip}" | sudo tee /etc/salt/minion.d/master.conf
+echo "id: ${instance_name}" | sudo tee /etc/salt/minion.d/id.conf
+
+# Write the unique minion GUID as a grain for Salt autosigning
+cat <<EOF | sudo tee /etc/salt/grains
+uuid: ${minion_guid}
+EOF
+
+# Instruct the minion to send the 'uuid' grain at key-sign time
+cat <<EOF | sudo tee /etc/salt/minion.d/autosign.conf
+autosign_grains:
+  - uuid
+EOF
+
+# Create a log directory in /var/log/discord and change its ownership to ubuntu
+sudo mkdir -p /var/log/discord
+sudo chown -R ubuntu:ubuntu /var/log/discord
+
+# Start the Discord bot using the virtual environment's Python interpreter.
+# Since main.py uses python-dotenv to load .env, it will pick up the DISCORD_TOKEN automatically.
+# Use sudo with sh -c so that redirection to the log file in /var/log/discord is performed with proper privileges.
+sudo -u ubuntu sh -c "nohup /opt/discord_bot/venv/bin/python /opt/discord_bot/main.py >> /var/log/discord/discord_bot.log 2>&1 &"
+

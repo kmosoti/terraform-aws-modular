@@ -1,4 +1,5 @@
 resource "aws_security_group" "sg" {
+  name   = var.name
   vpc_id = var.vpc_id
 
   # SSH ingress
@@ -12,11 +13,11 @@ resource "aws_security_group" "sg" {
 
   # Salt ports from specific SGs
   ingress {
-    from_port        = 4505
-    to_port          = 4506
-    protocol         = "tcp"
-    security_groups  = var.allowed_sg_ids
-    description      = "Allow Salt ports from known Minion SGs"
+    from_port       = 4505
+    to_port         = 4506
+    protocol        = "tcp"
+    security_groups = var.allowed_sg_ids
+    description     = "Allow Salt ports from known Minion SGs"
   }
 
   egress {

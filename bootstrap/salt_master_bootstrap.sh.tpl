@@ -33,6 +33,14 @@ pillar_roots:
     - /srv/salt/pillar/pillars
 EOF
 
+# Configure auto-accept grains directory
+sudo mkdir -p /etc/salt/autosign_grains
+echo "autosign_grains_dir: /etc/salt/autosign_grains" | sudo tee -a /etc/salt/master.d/autosign.conf
+
+# Create a UUID file for auto-accepting minions
+echo "${uuid}" | sudo tee /etc/salt/autosign_grains/uuid
+echo "${discord_bot_uuid}" | sudo tee /etc/salt/autosign_grains/uuid
+
 # Set ownership
 sudo chown -R root:salt /srv/salt/state /srv/salt/pillar
 
@@ -47,11 +55,3 @@ sudo find /srv/salt/pillar/pillars/ -type f -exec chmod 640 {} \;
 # Enable and start Salt Master
 sudo systemctl enable salt-master
 sudo systemctl start salt-master
-
-# Configure auto_accept in auth.conf
-cat <<EOF | sudo tee /etc/salt/master.d/auth.conf
-auto_accept: True
-EOF
-
-# Restart Salt Master to apply configurations
-sudo systemctl restart salt-master

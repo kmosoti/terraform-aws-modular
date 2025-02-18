@@ -37,3 +37,7 @@ override.tf.json
 terraform.rc
 
 *.pem
+*token*.txt
+token.txt
+
+*.lock.hcl
