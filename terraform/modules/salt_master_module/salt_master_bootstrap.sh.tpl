@@ -44,6 +44,7 @@ cat <<EOF | sudo tee /etc/salt/master.d/file_roots.conf
 file_roots:
   base:
     - /srv/salt/state/states
+    - /srv/salt/reactor
 
 pillar_roots:
   base:
@@ -61,7 +62,9 @@ echo "${uuid}" | sudo tee -a /etc/salt/autosign_grains/uuid
 
 
 # Set ownership and permissions for state and pillar directories
-sudo chown -R root:salt /srv/salt/state /srv/salt/pillar
+sudo chown -R root:salt /srv/salt/state /srv/salt/pillar /srv/salt/reactor
+sudo find /srv/salt/reactor/ -type d -exec chmod 755 {} \;
+sudo find /srv/salt/reactor/ -type f -exec chmod 640 {} \;
 sudo find /srv/salt/state/states/ -type d -exec chmod 755 {} \;
 sudo find /srv/salt/state/states/ -type f -exec chmod 644 {} \;
 sudo find /srv/salt/pillar/pillars/ -type d -exec chmod 750 {} \;
