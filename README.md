@@ -68,7 +68,7 @@ terraform-aws-modular/
    ```bash
    terraform destroy -var-file=terraform.tfvars --auto-approve
    ```
-
+git 
 ## SaltStack States and Pillars
 
 The Salt states are stored in a separate repository. You can view the public [Salt States Repository](https://github.com/kmosoti/terraform-aws-modular-salt-states) for details on how the states are structured and applied.

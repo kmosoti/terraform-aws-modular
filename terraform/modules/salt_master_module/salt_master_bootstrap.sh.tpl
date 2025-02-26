@@ -25,6 +25,18 @@ if [ ! -d "/srv/salt/pillar" ]; then
   sudo git clone https://${pillar_token}@github.com/kmosoti/terraform-aws-modular-salt-pillars.git /srv/salt/pillar
 fi
 
+# Clone Salt Reactors Repository into /srv/salt/reactor if not already present
+if [ ! -d "/srv/salt/reactor" ]; then
+  sudo git clone https://github.com/kmosoti/terraform-aws-modular-salt-reactor.git /srv/salt/reactor
+fi
+
+# Configure reactor on the Salt Master by creating the reactor configuration file
+sudo tee /etc/salt/master.d/reactor.conf > /dev/null <<EOF
+reactor:
+  - 'salt/minion/*/start':
+    - salt://reactor/minion/on_start.sls
+EOF
+
 
 # Configure file_roots and pillar_roots for Salt Master
 sudo mkdir -p /etc/salt/master.d
