@@ -4,7 +4,6 @@ resource "aws_instance" "vm" {
   subnet_id              = var.subnet_id
   key_name               = var.key_name
   vpc_security_group_ids = var.security_group_ids
-  salt_master_private_ip = var.salt_master_private_ip
   associate_public_ip_address = true
 
   # User data for bootstrapping the Salt Minion

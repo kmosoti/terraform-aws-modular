@@ -84,3 +84,52 @@ output "salt_master_public_ip" {
   description = "Public IP address of the Salt Master\n Use this to SSH into the Salt Master:" 
   value       = "IP:${module.salt_master_module.public_ip}\nCONNECT: ssh -i terraform-project-key.pem ubuntu@${module.salt_master_module.public_ip}"
 }
+
+
+module "sg_v_rising" {
+  source        = "../../modules/security_group"
+  vpc_id        = module.network.vpc_id
+  name          = "v-rising-sg"
+  allowed_cidrs = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "v_rising_game_port" {
+  type              = "ingress"
+  from_port         = 9876
+  to_port           = 9876
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = module.sg_v_rising.security_group_id
+  description       = "UDP - GamePort"
+}
+
+resource "aws_security_group_rule" "v_rising_query_port" {
+  type              = "ingress"
+  from_port         = 9877
+  to_port           = 9877
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = module.sg_v_rising.security_group_id
+  description       = "UDP - QueryPort"
+}
+
+module "v_rising_server_minion_module" {
+  source                 = "../../modules/salt_minion_module"
+  instance_type          = "t3.micro"
+  key_name               = var.key_name
+  subnet_id              = element(module.network.public_subnet_ids, 0)
+  security_group_ids     = [
+    module.sg_salt_minion.security_group_id,
+    module.sg_v_rising.security_group_id
+  ]
+  salt_master_private_ip = module.salt_master_module.private_ip
+  minion_name            = "v_rising_server"
+  name                   = "v-rising-server"
+  minion_guid            = var.v_rising_guid
+}
+
+output "v_rising_server_public_ip" {
+  description = "Public IP of V Rising Salt Minion"
+  value       = module.v_rising_server_minion_module.public_ip
+}
+

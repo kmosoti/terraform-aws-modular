@@ -26,3 +26,8 @@ variable "minion_guid" {
   description = "The GUID for the minion"
   type        = string
 }
+
+variable "v_rising_guid" {
+  description = "The GUID for the V-Rising minion"
+  type        = string
+}
